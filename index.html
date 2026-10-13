@@ -1,412 +1,564 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deriv DBot Signal Generator</title>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent-blue: #3b82f6;
-            --accent-red: #ef4444;
-            --accent-green: #10b981;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --border-color: #334155;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deriv DBot Signal Generator</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: #0f1b2d;
+      --panel-alt: #13253d;
+      --border: rgba(148, 163, 184, 0.18);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --green: #34d399;
+      --blue: #60a5fa;
+      --red: #f87171;
+      --amber: #fbbf24;
+      --purple: #a78bfa;
+      --shadow: rgba(15, 23, 42, 0.8);
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            margin: 0;
-            padding: 15px;
-        }
+    * { box-sizing: border-box; }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at top, #12263d, var(--bg) 40%);
+      color: var(--text);
+    }
 
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+    body {
+      padding: 24px 18px 40px;
+    }
 
-        header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            background: linear-gradient(90deg, #3b82f6, #10b981);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
 
-        header p {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            margin-top: 5px;
-        }
+    .app-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
+    .app-header h1 {
+      margin: 0;
+      font-size: clamp(1.7rem, 3vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      background: linear-gradient(90deg, var(--blue), var(--green), var(--purple));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
 
-        .control-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
+    .app-header p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
 
-        label {
-            display: block;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-            font-weight: 600;
-        }
+    .card {
+      background: rgba(15, 27, 45, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 18px 40px var(--shadow);
+      margin-bottom: 18px;
+    }
 
-        select, input {
-            width: 100%;
-            padding: 8px;
-            background-color: #0f172a;
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            border-radius: 6px;
-            font-size: 0.9rem;
-            box-sizing: border-box;
-        }
+    .card-title {
+      margin: 0 0 14px;
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
 
-        .btn-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
+    .control-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
 
-        button {
-            flex: 1;
-            padding: 10px;
-            font-weight: bold;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.95rem;
-        }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
 
-        #startBtn { background-color: var(--accent-green); color: white; }
-        #stopBtn { background-color: var(--accent-red); color: white; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
+    select, input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 0.96rem;
+      outline: none;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
 
-        .dbot-box {
-            background: #0f172a;
-            border: 2px dashed var(--accent-blue);
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-        }
+    select:focus, input:focus {
+      border-color: rgba(96, 165, 250, 0.9);
+      transform: translateY(-1px);
+    }
 
-        .dbot-number {
-            font-size: 3.5rem;
-            font-weight: bold;
-            color: var(--accent-green);
-            margin: 5px 0;
-        }
+    .button-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
 
-        .contract-tag {
-            display: inline-block;
-            background: rgba(59, 130, 246, 0.2);
-            color: var(--accent-blue);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 1rem;
-            margin-top: 5px;
-        }
+    button {
+      flex: 1;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
 
-        .stats-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 6px 0;
-            padding: 6px 10px;
-            background: rgba(15, 23, 42, 0.4);
-            border-radius: 6px;
-            font-size: 0.85rem;
-        }
+    button:hover:not(:disabled) { transform: translateY(-1px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .tick-stream {
-            display: flex;
-            gap: 6px;
-            overflow-x: auto;
-            padding: 5px 0;
-            min-height: 40px;
-            align-items: center;
-        }
+    #startBtn {
+      background: linear-gradient(135deg, var(--green), #0ea5e9);
+      color: #04131b;
+    }
 
-        .tick-pill {
-            background-color: #0f172a;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 6px 10px;
-            text-align: center;
-            min-width: 35px;
-            flex-shrink: 0;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--accent-blue);
-        }
+    #stopBtn {
+      background: linear-gradient(135deg, #ef4444, #fb7185);
+      color: white;
+    }
 
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            padding-top: 5px;
-        }
+    .signal-box {
+      background: linear-gradient(180deg, rgba(18, 38, 61, 0.95), rgba(9, 17, 29, 0.95));
+      border: 1px solid rgba(52, 211, 153, 0.6);
+      border-radius: 16px;
+      padding: 18px 16px 16px;
+      text-align: center;
+    }
 
-        .dot {
-            height: 8px;
-            width: 8px;
-            background-color: var(--accent-red);
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 5px;
-        }
-        .dot.connected { background-color: var(--accent-green); }
-    </style>
+    .signal-label {
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .signal-digit {
+      font-size: clamp(2.8rem, 7vw, 4.1rem);
+      font-weight: 900;
+      color: var(--green);
+      line-height: 1;
+      margin: 6px 0 12px;
+    }
+
+    .signal-type {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(96, 165, 250, 0.14);
+      border: 1px solid rgba(96, 165, 250, 0.25);
+      color: var(--blue);
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      background: rgba(10, 18, 30, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 10px;
+    }
+
+    .metric .label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.74rem;
+      margin-bottom: 6px;
+    }
+
+    .metric strong {
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .tick-stream {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 10px 6px 4px;
+      min-height: 56px;
+      align-items: center;
+    }
+
+    .tick-pill {
+      min-width: 42px;
+      min-height: 42px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
+      border: 1px solid var(--border);
+      color: var(--blue);
+      font-weight: 800;
+      font-size: 1.05rem;
+      flex-shrink: 0;
+    }
+
+    .stream-empty {
+      color: var(--muted);
+      font-size: 0.85rem;
+      width: 100%;
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 12px;
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--red);
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(248, 113, 113, 0.7);
+    }
+
+    .dot.connected {
+      background: var(--green);
+      box-shadow: 0 0 12px rgba(52, 211, 153, 0.8);
+    }
+
+    @media (max-width: 560px) {
+      .control-grid,
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      body {
+        padding-inline: 12px;
+      }
+    }
+  </style>
 </head>
 <body>
-
-<div class="container">
-    <header>
-        <h1>Deriv DBot Signal Generator</h1>
-        <p>Real-time automated digit contracts & prediction values for DBot</p>
+  <div class="container">
+    <header class="app-header">
+      <h1>Deriv DBot Signal Generator</h1>
+      <p>Real-time digit contract insights based on live tick behavior</p>
     </header>
 
-    <div class="card">
-        <div class="control-grid">
-            <div>
-                <label for="marketSelect">Market</label>
-                <select id="marketSelect">
-                    <option value="R_10">Volatility 10</option>
-                    <option value="R_25">Volatility 25</option>
-                    <option value="R_50" selected>Volatility 50</option>
-                    <option value="R_100">Volatility 100</option>
-                </select>
-            </div>
-            <div>
-                <label for="tickCountInput">Sample Ticks</label>
-                <input type="number" id="tickCountInput" min="10" max="100" value="50">
-            </div>
+    <section class="card">
+      <div class="control-grid">
+        <div>
+          <label for="marketSelect">Market</label>
+          <select id="marketSelect">
+            <option value="R_10">Volatility 10</option>
+            <option value="R_25">Volatility 25</option>
+            <option value="R_50" selected>Volatility 50</option>
+            <option value="R_100">Volatility 100</option>
+          </select>
         </div>
-        <div class="btn-row">
-            <button id="startBtn" onclick="startBot()">Start Stream</button>
-            <button id="stopBtn" onclick="stopBot()" disabled>Stop</button>
-        </div>
-    </div>
 
-    <div class="card" style="border-color: var(--accent-green);">
-        <h3 style="margin-top:0; color: var(--accent-green); font-size: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">DBot Input Parameters</h3>
-        <div class="dbot-box">
-            <div style="font-size: 0.8rem; color: var(--text-secondary);">PUT THIS NUMBER IN DBOT PREDICTION:</div>
-            <div id="dbotPredictionDigit" class="dbot-number">-</div>
-            <div>Contract Type:</div>
-            <div id="dbotContractType" class="contract-tag">WAITING...</div>
+        <div>
+          <label for="tickCountInput">Sample Ticks</label>
+          <input id="tickCountInput" type="number" min="10" max="200" value="50" />
         </div>
-    </div>
+      </div>
 
-    <div class="card">
-        <h3 style="margin-top:0; font-size: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Probability Analysis</h3>
-        <div class="stats-row">
-            <span>Coldest Digit (Differ Strategy):</span>
-            <strong id="statCold" style="color: var(--accent-red);">-</strong>
-        </div>
-        <div class="stats-row">
-            <span>Hottest Digit (Match Strategy):</span>
-            <strong id="statHot" style="color: var(--accent-blue);">-</strong>
-        </div>
-        <div class="stats-row">
-            <span>Even / Odd Ratio:</span>
-            <strong id="statEvenOdd">-</strong>
-        </div>
-        <div class="stats-row">
-            <span>Over / Under Bias:</span>
-            <strong id="statOverUnder">-</strong>
-        </div>
-    </div>
+      <div class="button-row">
+        <button id="startBtn" onclick="startBot()">Start Stream</button>
+        <button id="stopBtn" onclick="stopBot()" disabled>Stop</button>
+      </div>
+    </section>
 
-    <div class="card">
-        <h3 style="margin-top:0; font-size: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Live Tick Stream (Last Digits)</h3>
-        <div id="tickStream" class="tick-stream">
-            <span style="color: var(--text-secondary); font-size: 0.85rem;">Stream inactive. Click Start Stream.</span>
-        </div>
-        <div class="status-bar" style="margin-top: 10px;">
-            <div><span id="connectionDot" class="dot"></span><span id="connectionStatus">Disconnected</span></div>
-            <div id="activeSymbolLabel">R_50</div>
-        </div>
-    </div>
-</div>
+    <section class="card">
+      <h3 class="card-title">
+        <span>DBot Signal</span>
+        <span id="marketTag" style="color: var(--green); font-size: 0.8rem;">R_50</span>
+      </h3>
 
-<script>
-    let ws = null;
-    let tickHistory = [];
-    let isRunning = false;
-    let subscriptionId = null;
+      <div class="signal-box">
+        <div class="signal-label">Prediction Value</div>
+        <div id="dbotPredictionDigit" class="signal-digit">-</div>
+        <div id="dbotContractType" class="signal-type">WAITING...</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3 class="card-title">Probability Analysis</h3>
+      <div class="metrics-grid">
+        <div class="metric">
+          <span class="label">Coldest Digit</span>
+          <strong id="statCold" style="color: var(--red);">-</strong>
+        </div>
+        <div class="metric">
+          <span class="label">Hottest Digit</span>
+          <strong id="statHot" style="color: var(--blue);">-</strong>
+        </div>
+        <div class="metric">
+          <span class="label">Even / Odd</span>
+          <strong id="statEvenOdd">-</strong>
+        </div>
+        <div class="metric">
+          <span class="label">Over / Under</span>
+          <strong id="statOverUnder">-</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3 class="card-title">Live Tick Stream</h3>
+      <div id="tickStream" class="tick-stream">
+        <div class="stream-empty">Stream inactive. Click Start Stream.</div>
+      </div>
+
+      <div class="status-row">
+        <div class="status-left">
+          <span id="connectionDot" class="dot"></span>
+          <span id="connectionStatus">Disconnected</span>
+        </div>
+        <strong id="activeSymbolLabel">R_50</strong>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const state = {
+      ws: null,
+      isRunning: false,
+      tickHistory: [],
+      subscriptionId: null,
+      symbol: 'R_50',
+      maxTicks: 50
+    };
+
+    function setStatus(statusText, connected) {
+      document.getElementById('connectionStatus').innerText = statusText;
+      const dot = document.getElementById('connectionDot');
+      if (connected) {
+        dot.classList.add('connected');
+      } else {
+        dot.classList.remove('connected');
+      }
+    }
 
     function startBot() {
-        const symbol = document.getElementById('marketSelect').value;
-        const count = parseInt(document.getElementById('tickCountInput').value) || 50;
-        
-        document.getElementById('activeSymbolLabel').innerText = symbol;
-        tickHistory = [];
-        isRunning = true;
+      state.symbol = document.getElementById('marketSelect').value;
+      state.maxTicks = parseInt(document.getElementById('tickCountInput').value) || 50;
 
-        document.getElementById('startBtn').disabled = true;
-        document.getElementById('stopBtn').disabled = false;
-        document.getElementById('marketSelect').disabled = true;
-        document.getElementById('tickCountInput').disabled = true;
+      state.tickHistory = [];
+      state.isRunning = true;
+      document.getElementById('marketTag').innerText = state.symbol;
+      document.getElementById('activeSymbolLabel').innerText = state.symbol;
 
-        if (ws) {
-            ws.close();
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('stopBtn').disabled = false;
+      document.getElementById('marketSelect').disabled = true;
+      document.getElementById('tickCountInput').disabled = true;
+
+      if (state.ws) {
+        try { state.ws.close(); } catch (e) {}
+      }
+
+      state.ws = new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
+
+      state.ws.onopen = () => {
+        setStatus('Connected (Live Stream)', true);
+
+        state.ws.send(JSON.stringify({
+          ticks_history: state.symbol,
+          count: state.maxTicks,
+          end: 'latest',
+          style: 'ticks',
+          req_id: 1
+        }));
+
+        state.ws.send(JSON.stringify({
+          ticks: state.symbol,
+          subscribe: 1,
+          req_id: 2
+        }));
+      };
+
+      state.ws.onmessage = (event) => {
+        if (!state.isRunning) return;
+        let data;
+
+        try {
+          data = JSON.parse(event.data);
+        } catch (error) {
+          return;
         }
 
-        // Secure WebSocket connection using Deriv API endpoint with App ID 1089
-        ws = new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
+        if (data.msg_type === 'history' && data.history && Array.isArray(data.history.prices)) {
+          const pipSize = data.pip_size || 2;
+          data.history.prices.forEach((price) => processTick(price, pipSize));
+          updateDashboard();
+        }
 
-        ws.onopen = () => {
-            document.getElementById('connectionDot').classList.add('connected');
-            document.getElementById('connectionStatus').innerText = 'Connected (Live Stream)';
-            
-            // Request historical ticks first
-            ws.send(JSON.stringify({ 
-                "ticks_history": symbol, 
-                "count": count, 
-                "end": "latest", 
-                "style": "ticks",
-                "req_id": 1 
-            }));
+        if (data.msg_type === 'tick' && data.tick) {
+          if (data.subscription && data.subscription.id) {
+            state.subscriptionId = data.subscription.id;
+          }
+          processTick(data.tick.quote, data.tick.pip_size || 2);
+          updateDashboard();
+        }
+      };
 
-            // Subscribe to live tick stream
-            ws.send(JSON.stringify({ 
-                "ticks": symbol, 
-                "subscribe": 1,
-                "req_id": 2 
-            }));
-        };
+      state.ws.onerror = () => {
+        setStatus('Connection Error', false);
+      };
 
-        ws.onmessage = (event) => {
-            if (!isRunning) return;
-            const data = JSON.parse(event.data);
-
-            if (data.msg_type === 'history' && data.history && data.history.prices) {
-                const pipSize = data.pip_size || 2;
-                data.history.prices.forEach(price => processTick(price, pipSize));
-                updateDashboard();
-            } else if (data.msg_type === 'tick' && data.tick) {
-                if (data.subscription && data.subscription.id) {
-                    subscriptionId = data.subscription.id;
-                }
-                processTick(data.tick.quote, data.tick.pip_size);
-                updateDashboard();
-            }
-        };
-
-        ws.onerror = (error) => {
-            console.error('WebSocket Error:', error);
-            document.getElementById('connectionStatus').innerText = 'Connection Error';
-        };
-
-        ws.onclose = () => {
-            document.getElementById('connectionDot').classList.remove('connected');
-            document.getElementById('connectionStatus').innerText = 'Disconnected';
-        };
+      state.ws.onclose = () => {
+        if (!state.isRunning) {
+          setStatus('Stopped', false);
+        } else {
+          setStatus('Disconnected', false);
+        }
+      };
     }
 
     function stopBot() {
-        isRunning = false;
-        if (ws) {
-            if (subscriptionId) {
-                try {
-                    ws.send(JSON.stringify({ "forget": subscriptionId }));
-                } catch(e) {}
-            }
-            ws.close();
+      state.isRunning = false;
+
+      if (state.ws) {
+        if (state.subscriptionId) {
+          try {
+            state.ws.send(JSON.stringify({ forget: state.subscriptionId }));
+          } catch (e) {}
         }
-        document.getElementById('startBtn').disabled = false;
-        document.getElementById('stopBtn').disabled = true;
-        document.getElementById('marketSelect').disabled = false;
-        document.getElementById('tickCountInput').disabled = false;
-        document.getElementById('connectionDot').classList.remove('connected');
-        document.getElementById('connectionStatus').innerText = 'Stopped';
+        try { state.ws.close(); } catch (e) {}
+      }
+
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('stopBtn').disabled = true;
+      document.getElementById('marketSelect').disabled = false;
+      document.getElementById('tickCountInput').disabled = false;
+      setStatus('Stopped', false);
     }
 
     function processTick(price, pipSize) {
-        const priceStr = Number(price).toFixed(pipSize);
-        const lastDigit = parseInt(priceStr.slice(-1));
-        const max = parseInt(document.getElementById('tickCountInput').value) || 50;
-        
-        tickHistory.push(lastDigit);
-        if (tickHistory.length > max) {
-            tickHistory.shift();
-        }
+      if (price === undefined || price === null) return;
 
-        renderStream();
+      const priceStr = Number(price).toFixed(pipSize);
+      const lastDigit = parseInt(priceStr.slice(-1), 10);
+      if (Number.isNaN(lastDigit)) return;
+
+      state.tickHistory.push(lastDigit);
+      if (state.tickHistory.length > state.maxTicks) {
+        state.tickHistory.shift();
+      }
+
+      renderStream();
     }
 
     function renderStream() {
-        const container = document.getElementById('tickStream');
-        container.innerHTML = '';
-        tickHistory.slice(-15).reverse().forEach(d => {
-            const pill = document.createElement('div');
-            pill.className = 'tick-pill';
-            pill.innerText = d;
-            container.appendChild(pill);
-        });
+      const container = document.getElementById('tickStream');
+      container.innerHTML = '';
+
+      if (!state.tickHistory.length) {
+        container.innerHTML = '<div class="stream-empty">Stream inactive. Click Start Stream.</div>';
+        return;
+      }
+
+      state.tickHistory.slice(-15).reverse().forEach((digit) => {
+        const pill = document.createElement('div');
+        pill.className = 'tick-pill';
+        pill.innerText = digit;
+        container.appendChild(pill);
+      });
     }
 
     function updateDashboard() {
-        if (tickHistory.length === 0) return;
+      if (!state.tickHistory.length) return;
 
-        const counts = Array(10).fill(0);
-        let evens = 0;
-        let overs = 0;
+      const counts = Array(10).fill(0);
+      let evenCount = 0;
+      let overCount = 0;
 
-        tickHistory.forEach(d => {
-            counts[d]++;
-            if (d % 2 === 0) evens++;
-            if (d > 4) overs++;
-        });
+      state.tickHistory.forEach((digit) => {
+        counts[digit]++;
+        if (digit % 2 === 0) evenCount++;
+        if (digit > 4) overCount++;
+      });
 
-        const total = tickHistory.length;
-        let minCount = Infinity, coldDigit = 0;
-        let maxCount = -1, hotDigit = 0;
+      const total = state.tickHistory.length;
+      let coldDigit = 0;
+      let hotDigit = 0;
+      let minCount = Infinity;
+      let maxCount = -1;
 
-        counts.forEach((c, d) => {
-            if (c < minCount) { minCount = c; coldDigit = d; }
-            if (c > maxCount) { maxCount = c; hotDigit = d; }
-        });
+      counts.forEach((count, digit) => {
+        if (count < minCount) {
+          minCount = count;
+          coldDigit = digit;
+        }
+        if (count > maxCount) {
+          maxCount = count;
+          hotDigit = digit;
+        }
+      });
 
-        const coldPct = ((minCount / total) * 100).toFixed(1);
-        const hotPct = ((maxCount / total) * 100).toFixed(1);
-        const evenPct = ((evens / total) * 100).toFixed(0);
-        const oddPct = 100 - evenPct;
+      const coldPct = ((minCount / total) * 100).toFixed(1);
+      const hotPct = ((maxCount / total) * 100).toFixed(1);
+      const evenPct = ((evenCount / total) * 100).toFixed(0);
+      const oddPct = (100 - Number(evenPct)).toFixed(0);
 
-        document.getElementById('statCold').innerText = `Digit ${coldDigit} (${coldPct}%)`;
-        document.getElementById('statHot').innerText = `Digit ${hotDigit} (${hotPct}%)`;
-        document.getElementById('statEvenOdd').innerText = `Even: ${evenPct}% | Odd: ${oddPct}%`;
-        document.getElementById('statOverUnder').innerText = overs > (total * 0.55) ? 'Over Bias (>4)' : (overs < (total * 0.45) ? 'Under Bias (<5)' : 'Balanced');
+      const overThreshold = total * 0.55;
+      const underThreshold = total * 0.45;
+      let overUnderText = 'Balanced';
+      if (overCount > overThreshold) overUnderText = 'Over Bias (>4)';
+      else if (overCount < underThreshold) overUnderText = 'Under Bias (<5)';
 
-        document.getElementById('dbotPredictionDigit').innerText = coldDigit;
-        document.getElementById('dbotContractType').innerText = `DIGITDIFF (Differ ${coldDigit})`;
+      document.getElementById('statCold').innerText = `Digit ${coldDigit} (${coldPct}%)`;
+      document.getElementById('statHot').innerText = `Digit ${hotDigit} (${hotPct}%)`;
+      document.getElementById('statEvenOdd').innerText = `Even: ${evenPct}% | Odd: ${oddPct}%`;
+      document.getElementById('statOverUnder').innerText = overUnderText;
+
+      const predictionDigit = coldDigit;
+      const signalType = overCount > total * 0.5 ? 'DIGITDIFF' : 'DIGITMATCH';
+
+      document.getElementById('dbotPredictionDigit').innerText = predictionDigit;
+      document.getElementById('dbotContractType').innerText = `${signalType} (${signalType === 'DIGITDIFF' ? 'Differ' : 'Match'} ${predictionDigit})`;
     }
-</script>
-
+  </script>
 </body>
-  </html>
-  
+</html>
