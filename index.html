@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deriv DBot Signal Generator</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --accent-green: #10b981;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 8px;
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        #startBtn { background-color: var(--accent-green); color: white; }
+        #stopBtn { background-color: var(--accent-red); color: white; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .dbot-box {
+            background: #0f172a;
+            border: 2px dashed var(--accent-blue);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .dbot-number {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: var(--accent-green);
+            margin: 5px 0;
+        }
+
+        .contract-tag {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 6px 0;
+            padding: 6px 10px;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .tick-stream {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 5px 0;
+            min-height: 40px;
+            align-items: center;
+        }
+
+        .tick-pill {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px 10px;
+            text-align: center;
+            min-width: 35px;
+            flex-shrink: 0;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            padding-top: 5px;
+        }
+
+        .dot {
+            height: 8px;
+            width: 8px;
+            background-color: var(--accent-red);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .dot.connected { background-color: var(--accent-green); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Deriv DBot Signal Generator</h1>
+        <p>Real-time automated digit contracts & prediction values for DBot</p>
+    </header>
+
+    <div class="card">
+        <div class="control-grid">
+            <div>
+                <label for="marketSelect">Market</label>
+                <select id="marketSelect">
+                    <option value="R_10">Volatility 10</option>
+                    <option value="R_25">Volatility 25</option>
+                    <option value="R_50" selected>Volatility 50</option>
+                    <option value="R_100">Volatility 100</option>
+                </select>
+            </div>
+            <div>
+                <label for="tickCountInput">Sample Ticks</label>
+                <input type="number" id="tickCountInput" min="10" max="100" value="50">
+            </div>
+        </div>
+        <div class="btn-row">
+            <button id="startBtn" onclick="startBot()">Start Stream</button>
+            <button id="stopBtn" onclick="stopBot()" disabled>Stop</button>
+        </div>
+    </div>
+
+    <div class="card" style="border-color: var(--accent-green);">
+        <h3 style="margin-top:0; color: var(--accent-green); font-size: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">DBot Input Parameters</h3>
+        <div class="dbot-box">
+            <div style="font-size: 0.8rem; color: var(--text-secondary);">PUT THIS NUMBER IN DBOT PREDICTION:</div>
+            <div id="dbotPredictionDigit" class="dbot-number">-</div>
+            <div>Contract Type:</div>
+            <div id="dbotContractType" class="contract-tag">WAITING...</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0; font-size: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Probability Analysis</h3>
+        <div class="stats-row">
+            <span>Coldest Digit (Differ Strategy):</span>
+            <strong id="statCold" style="color: var(--accent-red);">-</strong>
+        </div>
+        <div class="stats-row">
+            <span>Hottest Digit (Match Strategy):</span>
+            <strong id="statHot" style="color: var(--accent-blue);">-</strong>
+        </div>
+        <div class="stats-row">
+            <span>Even / Odd Ratio:</span>
+            <strong id="statEvenOdd">-</strong>
+        </div>
+        <div class="stats-row">
+            <span>Over / Under Bias:</span>
+            <strong id="statOverUnder">-</strong>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0; font-size: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Live Tick Stream (Last Digits)</h3>
+        <div id="tickStream" class="tick-stream">
+            <span style="color: var(--text-secondary); font-size: 0.85rem;">Stream inactive. Click Start Stream.</span>
+        </div>
+        <div class="status-bar" style="margin-top: 10px;">
+            <div><span id="connectionDot" class="dot"></span><span id="connectionStatus">Disconnected</span></div>
+            <div id="activeSymbolLabel">R_50</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let ws = null;
+    let tickHistory = [];
+    let isRunning = false;
+    let subscriptionId = null;
+
+    function startBot() {
+        const symbol = document.getElementById('marketSelect').value;
+        const count = parseInt(document.getElementById('tickCountInput').value) || 50;
+        
+        document.getElementById('activeSymbolLabel').innerText = symbol;
+        tickHistory = [];
+        isRunning = true;
+
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('stopBtn').disabled = false;
+        document.getElementById('marketSelect').disabled = true;
+        document.getElementById('tickCountInput').disabled = true;
+
+        if (ws) {
+            ws.close();
+        }
+
+        // Secure WebSocket connection using Deriv API endpoint with App ID 1089
+        ws = new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
+
+        ws.onopen = () => {
+            document.getElementById('connectionDot').classList.add('connected');
+            document.getElementById('connectionStatus').innerText = 'Connected (Live Stream)';
+            
+            // Request historical ticks first
+            ws.send(JSON.stringify({ 
+                "ticks_history": symbol, 
+                "count": count, 
+                "end": "latest", 
+                "style": "ticks",
+                "req_id": 1 
+            }));
+
+            // Subscribe to live tick stream
+            ws.send(JSON.stringify({ 
+                "ticks": symbol, 
+                "subscribe": 1,
+                "req_id": 2 
+            }));
+        };
+
+        ws.onmessage = (event) => {
+            if (!isRunning) return;
+            const data = JSON.parse(event.data);
+
+            if (data.msg_type === 'history' && data.history && data.history.prices) {
+                const pipSize = data.pip_size || 2;
+                data.history.prices.forEach(price => processTick(price, pipSize));
+                updateDashboard();
+            } else if (data.msg_type === 'tick' && data.tick) {
+                if (data.subscription && data.subscription.id) {
+                    subscriptionId = data.subscription.id;
+                }
+                processTick(data.tick.quote, data.tick.pip_size);
+                updateDashboard();
+            }
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket Error:', error);
+            document.getElementById('connectionStatus').innerText = 'Connection Error';
+        };
+
+        ws.onclose = () => {
+            document.getElementById('connectionDot').classList.remove('connected');
+            document.getElementById('connectionStatus').innerText = 'Disconnected';
+        };
+    }
+
+    function stopBot() {
+        isRunning = false;
+        if (ws) {
+            if (subscriptionId) {
+                try {
+                    ws.send(JSON.stringify({ "forget": subscriptionId }));
+                } catch(e) {}
+            }
+            ws.close();
+        }
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('stopBtn').disabled = true;
+        document.getElementById('marketSelect').disabled = false;
+        document.getElementById('tickCountInput').disabled = false;
+        document.getElementById('connectionDot').classList.remove('connected');
+        document.getElementById('connectionStatus').innerText = 'Stopped';
+    }
+
+    function processTick(price, pipSize) {
+        const priceStr = Number(price).toFixed(pipSize);
+        const lastDigit = parseInt(priceStr.slice(-1));
+        const max = parseInt(document.getElementById('tickCountInput').value) || 50;
+        
+        tickHistory.push(lastDigit);
+        if (tickHistory.length > max) {
+            tickHistory.shift();
+        }
+
+        renderStream();
+    }
+
+    function renderStream() {
+        const container = document.getElementById('tickStream');
+        container.innerHTML = '';
+        tickHistory.slice(-15).reverse().forEach(d => {
+            const pill = document.createElement('div');
+            pill.className = 'tick-pill';
+            pill.innerText = d;
+            container.appendChild(pill);
+        });
+    }
+
+    function updateDashboard() {
+        if (tickHistory.length === 0) return;
+
+        const counts = Array(10).fill(0);
+        let evens = 0;
+        let overs = 0;
+
+        tickHistory.forEach(d => {
+            counts[d]++;
+            if (d % 2 === 0) evens++;
+            if (d > 4) overs++;
+        });
+
+        const total = tickHistory.length;
+        let minCount = Infinity, coldDigit = 0;
+        let maxCount = -1, hotDigit = 0;
+
+        counts.forEach((c, d) => {
+            if (c < minCount) { minCount = c; coldDigit = d; }
+            if (c > maxCount) { maxCount = c; hotDigit = d; }
+        });
+
+        const coldPct = ((minCount / total) * 100).toFixed(1);
+        const hotPct = ((maxCount / total) * 100).toFixed(1);
+        const evenPct = ((evens / total) * 100).toFixed(0);
+        const oddPct = 100 - evenPct;
+
+        document.getElementById('statCold').innerText = `Digit ${coldDigit} (${coldPct}%)`;
+        document.getElementById('statHot').innerText = `Digit ${hotDigit} (${hotPct}%)`;
+        document.getElementById('statEvenOdd').innerText = `Even: ${evenPct}% | Odd: ${oddPct}%`;
+        document.getElementById('statOverUnder').innerText = overs > (total * 0.55) ? 'Over Bias (>4)' : (overs < (total * 0.45) ? 'Under Bias (<5)' : 'Balanced');
+
+        document.getElementById('dbotPredictionDigit').innerText = coldDigit;
+        document.getElementById('dbotContractType').innerText = `DIGITDIFF (Differ ${coldDigit})`;
+    }
+</script>
+
+</body>
+  </html>
+  
